@@ -4,6 +4,8 @@ Spark（2009 年）是基于**内存**计算的大数据**并行**计算框架�
 
 # 2. 学习 Spark 代码
 
+     git clone --recursive git://github.com/apache/spark.git -b v2.3.1
+
 ## 1. Spark 代码结构
 
 [Spark@GitHub](https://github.com/apache/spark/tree/master/core/src/main/scala/org/apache/spark)
