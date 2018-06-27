@@ -8,15 +8,15 @@ Spark（2009 年）是基于**内存**计算的大数据**并行**计算框架�
 
 [Spark@GitHub](https://github.com/apache/spark/tree/master/core/src/main/scala/org/apache/spark)
 
-1. api
-2. broadcast
-3. deploy
-4. executor
-5. input
-6. internal
-7. io
-8. launcher
-9. mapred
+1. api：Spark 的 Java，Python 和 R 的编程接口实现。
+2. broadcast：广播变量的编程实现。
+3. deploy：Spark 的部署与启动的编程实现。
+4. executor：Worker 节点执行 Task（计算）的编程实现。
+5. input：各种输入流如文件、定长数据的编程实现。
+6. internal：辅助工具的编程实现，例如日志。
+7. io：压缩算法等。
+8. launcher：Spark 处理与 Launcher Server 通信的编程实现。
+9. mapred：
 10. memory
 11. metrics
 12. network
