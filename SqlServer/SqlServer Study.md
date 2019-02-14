@@ -34,19 +34,19 @@ Tips：
 
 ### Always On ###
 
-1. 在 4 服务器上修改 C:\windows\system32\drivers\etc\hosts
+1. 在 sqlAzureIntl00 上安装 AD DS、DNS 并设置 AD 域名为 domain.com
 
-    ```bash
-    10.0.2.5 sqlAzureIntl00
-    10.0.2.4 sqlAzureIntl01
-    10.0.2.6 sqlAzureIntl02
-    10.0.2.7 sqlAzureIntl03
-    ```
+```bash
+sqlAzureIntl00 10.0.2.4
+sqlAzureIntl01 10.0.2.5
+sqlAzureIntl02 10.0.2.6
+sqlAzureIntl03 10.0.2.7
+```
 
 1. 在 4 服务器上关闭防火墙
 
 1. 在 sqlAzureIntl00 上安装 “File and Storage Services” 和 “iSCSI Target Server”
-    * 创建 "New iSCSI Virtual Disk"，名称：sqlAzureIntlStorageDisk00 - sqlAzureIntlStorageDisk03 对应 4 块虚拟磁盘, sqlAzureIntlStorageTarget00 对应 4 台服务器
+    * 创建 "New iSCSI Virtual Disk"，名称：sqlAzureIntlStorageDisk00 - sqlAzureIntlStorageDisk03 对应 4 块虚拟磁盘, sqlAzureIntlStorageTarget 对应 4 台服务器，sqlAzureIntl0[0-3].domain.com
 
 1. 在 4 服务器上使用 iSCSI Initiator 连接 sqlAzureIntl00，并打开 Volumes and Devices 使用 Auto Configure 连接四块磁盘
 
@@ -59,5 +59,6 @@ Tips：
 
     ```
     Error：Cluster resource 'Cluster Name' of type 'Network Name' in clustered role 'Cluster Group' failed. The error code was '0xcb' ('The system could not find the environment option that was entered.').
-    Solution: [Try configure DNS on sqlAzureIntl00]
+    Solution: Configure DNS and AD DS on sqlAzureIntl00
     ```
+
