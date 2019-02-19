@@ -1,0 +1,68 @@
+1. 准备工作
+Windows Server 2012 上需要安装 Windows8.1-KB2999226-x64.msu
+下载 Microsoft.Azure.ServiceFabric.WindowsServer.6.3.187.9494.zip
+
+2. 检查配置文件
+.\TestConfiguration.ps1 -ClusterConfigFilePath .\ClusterConfig.Unsecure.MultiMachine.json
+
+3. 创建集群
+.\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath .\ClusterConfig.Unsecure.MultiMachine.json –FabricRuntimePackagePath .\MicrosoftAzureServiceFabric.6.3.187.9494.cab -AcceptEULA
+
+4. 连接集群
+Connect-ServiceFabricCluster 10.0.5.5:19000
+
+5. 测试连接
+Get-ServiceFabricClusterConfiguration
+
+6. 缩放集群
+.\AddNode.ps1 -NodeName vm3 -NodeType NodeType0 -NodeIPAddressorFQDN 10.0.5.8 -ExistingClientConnectionEndpoint 10.0.5.5:19000 -UpgradeDomain UD3 -FaultDomain fd:/dc4/r0 -AcceptEULA
+
+Get-ServiceFabricClusterConfiguration > NewConfiguration2.json
+
+# 修改 NewConfiguration2.json 中 ClusterConfigurationVersion 版本号
+Start-ServiceFabricClusterConfigurationUpgrade -ClusterConfigPath NewConfiguration2.json
+
+6. 缩放集群
+# 登录到即将被删除的 Node
+Connect-ServiceFabricCluster 10.0.5.5:19000
+.\RemoveNode.ps1 -ExistingClientConnectionEndpoint 10.0.5.5:19000
+
+在其他节点运行
+Get-ServiceFabricClusterConfiguration > NewConfiguration3.json
+# 修改 NewConfiguration3.json 中 ClusterConfigurationVersion 版本号
+# 在 FabricSettings > Parameters 下增加,
+#          {
+#            "name": "NodesToBeRemoved",
+#            "value": "vm3"
+#          }
+Start-ServiceFabricClusterConfigurationUpgrade -ClusterConfigPath NewConfiguration3.json
+
+7. 关闭遥测
+遥测管道尝试每天一次将以下数据上传到 https://vortex.data.microsoft.com/collect/v1。 这是尽力而为的上传，不会影响群集功能。 仅从运行故障转移管理器的主节点发送遥测数据。 其他节点不发送遥测数据。
+#在 / > Properties 下增加 "EnableTelemetry": false
+
+8. 关闭自动升级
+#在 / > Properties 下增加 "fabricClusterAutoupgradeEnabled": false
+
+9. 删除集群
+.\RemoveServiceFabricCluster.ps1 -ClusterConfigFilePath .\ClusterConfig.Unsecure.MultiMachine.json -Force
+
+#从当前节点清除 Service Fabric
+.\CleanFabric.ps1
+
+10. 更改集群配置
+Start-ServiceFabricClusterConfigurationUpgrade -ClusterConfigPath .\ClusterConfig.Unsecure.MultiMachine.New.json
+
+Get-ServiceFabricRegisteredClusterCodeVersion
+
+0. 相关内容
+faultDomain						容错域可让群集管理员定义可能因共享的物理依赖项而同时发生故障的物理节点。
+upgradeDomain					升级域描述几乎在相同时间关闭以进行 Service Fabric 升级的节点集。 可以选择将哪些节点分配到哪些升级域，因为这不受任何物理要求的限制。
+clientConnectionEndpointPort	是使用客户端 API 时，客户端用来连接群集的端口。
+clusterConnectionEndpointPort	是节点相互通信时使用的端口。
+leaseDriverEndpointPort			是群集租用驱动程序用来判断节点是否仍处于活动状态的端口。
+serviceConnectionEndpointPort	是节点上部署的应用程序和服务用来与该特定节点上的 Service Fabric 客户端通信的端口。
+httpGatewayEndpointPort			是 Service Fabric Explorer 用来连接群集的端口。
+ephemeralPorts					重写 OS 使用的动态端口。 Service Fabric 使用其中的一部分端口作为应用程序端口，剩余的端口供 OS 使用。 它还会将此范围映射到 OS 中的现有范围，因此，无论何时，都可以使用示例 JSON 文件中指定的范围。 确保起始端口与结束端口至少相差 255。 如果此差过小，可能会遇到冲突，因为此范围与 OS 共享。 若要查看配置的动态端口范围，请运行 netsh int ipv4 show dynamicport tcp。
+applicationPorts				是 Service Fabric 应用程序使用的端口。 应用程序端口范围的大小应足以满足应用程序的终结点要求。 此范围在计算机上的动态端口范围中应是独占的，即按配置中设置的 ephemeralPorts 范围。 每当需要新端口时，Service Fabric 将使用这些端口，并负责为这些端口打开防火墙。
+reverseProxyEndpointPort		是可选的反向代理终结点。 有关详细信息，请参阅 Service Fabric 反向代理。
